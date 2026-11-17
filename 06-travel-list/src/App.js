@@ -1,16 +1,48 @@
 import { useState } from "react";
 
 export default function App() {
-  const initialItems = [
-    { id: 1, description: "Passports", quantity: 2, packed: false },
-    { id: 2, description: "Socks", quantity: 12, packed: true },
-  ];
+  const itemsFromLocalStorage = JSON.parse(localStorage.getItem("items")) || [];
+
+  const [items, setItems] = useState(itemsFromLocalStorage);
+
+  function handleAddItem(item) {
+    setItems((items) => [...items, item]);
+    localStorage.setItem("items", JSON.stringify([...items, item]));
+  }
+
+  function handleDeleteItem(id) {
+    setItems((items) => items.filter((item) => item.id !== id));
+    localStorage.setItem(
+      "items",
+      JSON.stringify(items.filter((item) => item.id !== id)),
+    );
+  }
+
+  function handlePackedItem(id) {
+    setItems((items) =>
+      items.map((item) =>
+        item.id === id ? { ...item, packed: !item.packed } : item,
+      ),
+    );
+    localStorage.setItem(
+      "items",
+      JSON.stringify(
+        items.map((item) =>
+          item.id === id ? { ...item, packed: !item.packed } : item,
+        ),
+      ),
+    );
+  }
 
   return (
     <div className="app">
       <Logo />
-      <Form />
-      <PackingList items={initialItems} />
+      <Form onAddItems={handleAddItem} />
+      <PackingList
+        items={items}
+        onDeleteItem={handleDeleteItem}
+        onPackedItem={handlePackedItem}
+      />
       <Stats />
     </div>
   );
@@ -20,7 +52,7 @@ function Logo() {
   return <h1>🌴Far Away🧳</h1>;
 }
 
-function Form() {
+function Form({ onAddItems }) {
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState(1);
 
@@ -30,7 +62,8 @@ function Form() {
     if (!description) return;
 
     const newItem = { description, quantity, packed: false, id: Date.now() };
-    // initialItems.push(newItem);
+
+    onAddItems(newItem);
 
     setDescription("");
     setQuantity(1);
@@ -60,26 +93,35 @@ function Form() {
   );
 }
 
-function PackingList({ items }) {
+function PackingList({ items, onDeleteItem, onPackedItem }) {
   return (
     <div className="list">
       <ul>
         {items.map((item) => (
-          <Item key={item.id} item={item} />
+          <Item
+            key={item.id}
+            item={item}
+            onDeleteItem={onDeleteItem}
+            onPackedItem={onPackedItem}
+          />
         ))}
       </ul>
     </div>
   );
 }
 
-function Item({ item }) {
+function Item({ item, onDeleteItem, onPackedItem }) {
   return (
     <li>
-      <input type="checkbox" value={item.packed} />
+      <input
+        type="checkbox"
+        checked={item.packed}
+        onChange={(e) => onPackedItem(item.id)}
+      />
       <span style={item.packed ? { textDecoration: "line-through" } : {}}>
         {item.quantity} {item.description}
       </span>
-      <button>❌</button>
+      <button onClick={() => onDeleteItem(item.id)}>❌</button>
     </li>
   );
 }
