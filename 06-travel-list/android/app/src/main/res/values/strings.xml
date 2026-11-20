@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">far-away-travel-list</string>
+    <string name="title_activity_main">far-away-travel-list</string>
+    <string name="package_name">com.faraway.app</string>
+    <string name="custom_url_scheme">com.faraway.app</string>
+</resources>
